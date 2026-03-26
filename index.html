@@ -1,8 +1,322 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <meta http-equiv="refresh" content="0; url=https://google.com">
-  <title>Redirecting...</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Personas</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #080808;
+      --surface: #111111;
+      --border: #222222;
+      --accent: #00ff88;
+      --accent2: #ff3366;
+      --text: #f0f0f0;
+      --muted: #555555;
+      --font-display: 'Syne', sans-serif;
+      --font-mono: 'Space Mono', monospace;
+    }
+
+    html, body {
+      height: 100%;
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font-mono);
+      overflow: hidden;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .grid-bg {
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(var(--border) 1px, transparent 1px),
+        linear-gradient(90deg, var(--border) 1px, transparent 1px);
+      background-size: 60px 60px;
+      opacity: 0.4;
+      z-index: 0;
+    }
+
+    .glow {
+      position: fixed;
+      width: 600px;
+      height: 600px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(0,255,136,0.06) 0%, transparent 70%);
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      pointer-events: none;
+      z-index: 0;
+      animation: pulse 4s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+      50% { transform: translate(-50%, -50%) scale(1.1); opacity: 0.7; }
+    }
+
+    .container {
+      position: relative;
+      z-index: 1;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+      gap: 3rem;
+    }
+
+    .header { text-align: center; }
+
+    .tag {
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      color: var(--accent);
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      margin-bottom: 1.2rem;
+      opacity: 0;
+      animation: fadeUp 0.6s ease forwards 0.2s;
+    }
+
+    .title {
+      font-family: var(--font-display);
+      font-size: clamp(3.5rem, 10vw, 7rem);
+      font-weight: 800;
+      line-height: 0.9;
+      letter-spacing: -0.03em;
+      opacity: 0;
+      animation: fadeUp 0.6s ease forwards 0.4s;
+    }
+
+    .title span {
+      color: var(--accent);
+      position: relative;
+      display: inline-block;
+    }
+
+    .title span::after {
+      content: '';
+      position: absolute;
+      bottom: 4px;
+      left: 0;
+      width: 100%;
+      height: 3px;
+      background: var(--accent);
+      transform: scaleX(0);
+      transform-origin: left;
+      animation: lineReveal 0.6s ease forwards 1s;
+    }
+
+    @keyframes lineReveal { to { transform: scaleX(1); } }
+
+    .subtitle {
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      color: var(--muted);
+      margin-top: 1rem;
+      letter-spacing: 0.1em;
+      opacity: 0;
+      animation: fadeUp 0.6s ease forwards 0.6s;
+    }
+
+    .search-wrapper {
+      width: 100%;
+      max-width: 480px;
+      opacity: 0;
+      animation: fadeUp 0.6s ease forwards 0.8s;
+    }
+
+    .search-label {
+      font-size: 0.65rem;
+      color: var(--muted);
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      margin-bottom: 0.6rem;
+      display: block;
+    }
+
+    .search-box {
+      display: flex;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      transition: border-color 0.2s;
+    }
+
+    .search-box:focus-within {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 1px var(--accent), 0 0 30px rgba(0,255,136,0.08);
+    }
+
+    .prefix {
+      padding: 1rem 0 1rem 1rem;
+      color: var(--accent);
+      font-size: 0.85rem;
+      user-select: none;
+      white-space: nowrap;
+    }
+
+    .search-input {
+      flex: 1;
+      background: transparent;
+      border: none;
+      outline: none;
+      color: var(--text);
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      padding: 1rem 0.5rem;
+      caret-color: var(--accent);
+    }
+
+    .search-input::placeholder { color: var(--muted); }
+
+    .search-btn {
+      background: var(--accent);
+      color: #000;
+      border: none;
+      padding: 0 1.4rem;
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.1s;
+    }
+
+    .search-btn:hover { background: #00e07a; }
+    .search-btn:active { transform: scale(0.97); }
+
+    .error-msg {
+      font-size: 0.7rem;
+      color: var(--accent2);
+      margin-top: 0.5rem;
+      min-height: 1rem;
+      letter-spacing: 0.05em;
+    }
+
+    .footer-tags {
+      display: flex;
+      gap: 0.8rem;
+      opacity: 0;
+      animation: fadeUp 0.6s ease forwards 1s;
+    }
+
+    .ftag {
+      font-size: 0.6rem;
+      color: var(--muted);
+      border: 1px solid var(--border);
+      padding: 0.3rem 0.7rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(16px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .corner {
+      position: fixed;
+      font-size: 0.6rem;
+      color: var(--muted);
+      letter-spacing: 0.1em;
+      font-family: var(--font-mono);
+    }
+    .corner.tl { top: 1.5rem; left: 1.5rem; }
+    .corner.tr { top: 1.5rem; right: 1.5rem; }
+    .corner.bl { bottom: 1.5rem; left: 1.5rem; }
+    .corner.br { bottom: 1.5rem; right: 1.5rem; }
+  </style>
 </head>
-<body>Redirecting...</body>
+<body>
+  <div class="grid-bg"></div>
+  <div class="glow"></div>
+
+  <span class="corner tl">PERSONAS_v1.0</span>
+  <span class="corner tr" id="clock"></span>
+  <span class="corner bl">ifreaku.github.io</span>
+  <span class="corner br">AI_ANALYSIS</span>
+
+  <div class="container">
+    <div class="header">
+      <div class="tag">// discord personality engine</div>
+      <h1 class="title">PER<span>SONAS</span></h1>
+      <p class="subtitle">enter a username to load their psychological profile</p>
+    </div>
+
+    <div class="search-wrapper">
+      <span class="search-label">// target username</span>
+      <div class="search-box">
+        <span class="prefix">personas /</span>
+        <input
+          class="search-input"
+          id="usernameInput"
+          type="text"
+          placeholder="username"
+          autocomplete="off"
+          spellcheck="false"
+        />
+        <button class="search-btn" onclick="navigate()">RUN →</button>
+      </div>
+      <div class="error-msg" id="errorMsg"></div>
+    </div>
+
+    <div class="footer-tags">
+      <span class="ftag">big five</span>
+      <span class="ftag">trait scores</span>
+      <span class="ftag">language fingerprint</span>
+      <span class="ftag">hidden traits</span>
+    </div>
+  </div>
+
+  <script>
+    function updateClock() {
+      const now = new Date();
+      document.getElementById('clock').textContent =
+        now.toLocaleTimeString('en-US', { hour12: false });
+    }
+    updateClock();
+    setInterval(updateClock, 1000);
+
+    document.getElementById('usernameInput').addEventListener('keydown', e => {
+      if (e.key === 'Enter') navigate();
+    });
+
+    function navigate() {
+      const input = document.getElementById('usernameInput');
+      const error = document.getElementById('errorMsg');
+      const val = input.value.trim().toLowerCase();
+
+      if (!val) {
+        error.textContent = '> error: username cannot be empty';
+        input.focus();
+        return;
+      }
+
+      if (!/^[a-z0-9_.\-]+$/.test(val)) {
+        error.textContent = '> error: invalid characters in username';
+        return;
+      }
+
+      error.textContent = '> loading profile...';
+      setTimeout(() => {
+        window.location.href = `https://ifreaku.github.io/personas/${val}.html`;
+      }, 300);
+    }
+  </script>
+</body>
 </html>
