@@ -1,0 +1,1086 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PERSONAS — {{USERNAME}}</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #080808;
+      --surface: #101010;
+      --surface2: #161616;
+      --border: #1e1e1e;
+      --accent: #00ff88;
+      --accent2: #ff3366;
+      --accent3: #ffaa00;
+      --text: #f0f0f0;
+      --muted: #444;
+      --muted2: #666;
+      --font-display: 'Syne', sans-serif;
+      --font-mono: 'Space Mono', monospace;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font-mono);
+      font-size: 13px;
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 999;
+    }
+
+    /* ── LAYOUT ── */
+    .page { max-width: 1100px; margin: 0 auto; padding: 0 1.5rem 5rem; }
+
+    /* ── NAV ── */
+    nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1.2rem 1.5rem;
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      background: rgba(8,8,8,0.92);
+      backdrop-filter: blur(12px);
+      z-index: 100;
+    }
+
+    .nav-logo {
+      font-family: var(--font-display);
+      font-weight: 800;
+      font-size: 1rem;
+      letter-spacing: -0.02em;
+      color: var(--text);
+      text-decoration: none;
+    }
+
+    .nav-logo span { color: var(--accent); }
+
+    .nav-back {
+      font-size: 0.65rem;
+      color: var(--muted2);
+      text-decoration: none;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      transition: color 0.2s;
+    }
+    .nav-back:hover { color: var(--accent); }
+
+    /* ── HERO ── */
+    .hero {
+      padding: 4rem 0 3rem;
+      border-bottom: 1px solid var(--border);
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 2rem;
+      align-items: end;
+    }
+
+    .hero-tag {
+      font-size: 0.65rem;
+      color: var(--accent);
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      margin-bottom: 0.8rem;
+    }
+
+    .hero-username {
+      font-family: var(--font-display);
+      font-size: clamp(2.5rem, 7vw, 5.5rem);
+      font-weight: 800;
+      line-height: 0.9;
+      letter-spacing: -0.03em;
+      word-break: break-all;
+    }
+
+    .hero-short {
+      font-size: 0.8rem;
+      color: var(--muted2);
+      margin-top: 1.2rem;
+      max-width: 520px;
+      line-height: 1.7;
+    }
+
+    .hero-vibe {
+      margin-top: 0.8rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.65rem;
+      color: var(--accent3);
+      letter-spacing: 0.1em;
+    }
+
+    .hero-vibe::before { content: '//'; color: var(--muted); }
+
+    .hero-meta {
+      text-align: right;
+    }
+
+    .meta-badge {
+      display: inline-block;
+      border: 1px solid var(--border);
+      padding: 0.4rem 0.9rem;
+      font-size: 0.6rem;
+      color: var(--muted2);
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      margin-bottom: 0.4rem;
+    }
+
+    /* ── SECTION ── */
+    .section {
+      margin-top: 3.5rem;
+    }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+      padding-bottom: 0.8rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .section-num {
+      font-size: 0.6rem;
+      color: var(--muted);
+      letter-spacing: 0.2em;
+      min-width: 2rem;
+    }
+
+    .section-title {
+      font-family: var(--font-display);
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--text);
+    }
+
+    .section-title span { color: var(--accent); }
+
+    /* ── LONG DESC ── */
+    .long-desc {
+      font-size: 0.82rem;
+      color: #aaa;
+      line-height: 1.9;
+      max-width: 700px;
+      border-left: 2px solid var(--accent);
+      padding-left: 1.2rem;
+    }
+
+    /* ── GRID ── */
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+    .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; }
+
+    @media (max-width: 700px) {
+      .grid-2 { grid-template-columns: 1fr; }
+      .grid-3 { grid-template-columns: 1fr 1fr; }
+      .hero { grid-template-columns: 1fr; }
+      .hero-meta { text-align: left; }
+    }
+
+    /* ── CARD ── */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      padding: 1.4rem;
+    }
+
+    .card-title {
+      font-size: 0.6rem;
+      color: var(--muted2);
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      margin-bottom: 1rem;
+    }
+
+    /* ── CHART WRAPPER ── */
+    .chart-wrap {
+      position: relative;
+      width: 100%;
+    }
+
+    .radar-wrap { height: 280px; }
+    .bar-wrap { height: 260px; }
+
+    /* ── SCORE ROW ── */
+    .score-row {
+      display: flex;
+      flex-direction: column;
+      gap: 0.7rem;
+    }
+
+    .score-item {
+      display: grid;
+      grid-template-columns: 130px 1fr 40px;
+      align-items: center;
+      gap: 0.8rem;
+    }
+
+    .score-label {
+      font-size: 0.65rem;
+      color: var(--muted2);
+      letter-spacing: 0.05em;
+      text-transform: capitalize;
+    }
+
+    .score-bar-bg {
+      height: 4px;
+      background: var(--border);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .score-bar-fill {
+      height: 100%;
+      background: var(--accent);
+      width: 0%;
+      transition: width 1.2s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .score-bar-fill.danger { background: var(--accent2); }
+    .score-bar-fill.warn { background: var(--accent3); }
+
+    .score-val {
+      font-size: 0.65rem;
+      color: var(--text);
+      text-align: right;
+    }
+
+    /* ── BOOL PILL ── */
+    .bool-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      font-size: 0.65rem;
+      padding: 0.25rem 0.7rem;
+      border: 1px solid;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+
+    .bool-pill.yes { border-color: var(--accent); color: var(--accent); }
+    .bool-pill.no { border-color: var(--muted); color: var(--muted); }
+
+    /* ── STRING FIELD ── */
+    .field-row {
+      display: flex;
+      flex-direction: column;
+      gap: 0.3rem;
+      margin-bottom: 1rem;
+    }
+
+    .field-key {
+      font-size: 0.6rem;
+      color: var(--muted);
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+    }
+
+    .field-val {
+      font-size: 0.8rem;
+      color: var(--text);
+    }
+
+    /* ── TAGS ── */
+    .tags { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+
+    .tag-item {
+      font-size: 0.65rem;
+      padding: 0.3rem 0.7rem;
+      border: 1px solid var(--border);
+      color: var(--muted2);
+      letter-spacing: 0.05em;
+      transition: border-color 0.2s, color 0.2s;
+    }
+
+    .tag-item:hover { border-color: var(--accent); color: var(--accent); }
+    .tag-item.accent { border-color: rgba(0,255,136,0.3); color: var(--accent); }
+    .tag-item.danger { border-color: rgba(255,51,102,0.3); color: var(--accent2); }
+    .tag-item.warn { border-color: rgba(255,170,0,0.3); color: var(--accent3); }
+
+    /* ── QUOTES ── */
+    .quotes { display: flex; flex-direction: column; gap: 1rem; }
+
+    .quote-item {
+      border-left: 2px solid var(--muted);
+      padding: 0.6rem 1rem;
+      font-size: 0.8rem;
+      color: #aaa;
+      font-style: italic;
+      line-height: 1.6;
+      transition: border-color 0.2s;
+    }
+
+    .quote-item:hover { border-color: var(--accent); color: var(--text); }
+
+    /* ── BEHAVIORAL BOOL GRID ── */
+    .bool-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-top: 0.5rem;
+    }
+
+    /* ── WORD CLOUD ── */
+    .word-cloud {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.6rem;
+      align-items: center;
+    }
+
+    .word-item {
+      font-family: var(--font-display);
+      font-weight: 700;
+      color: var(--muted2);
+      transition: color 0.2s;
+      cursor: default;
+    }
+
+    .word-item:hover { color: var(--accent); }
+
+    /* ── HIDDEN TRAITS ── */
+    .hidden-list { display: flex; flex-direction: column; gap: 0.8rem; }
+
+    .hidden-item {
+      display: flex;
+      gap: 0.8rem;
+      align-items: flex-start;
+      padding: 0.8rem;
+      border: 1px solid var(--border);
+      background: var(--surface2);
+      font-size: 0.78rem;
+      color: #aaa;
+      line-height: 1.6;
+    }
+
+    .hidden-item::before {
+      content: '◆';
+      color: var(--accent);
+      font-size: 0.5rem;
+      margin-top: 0.4rem;
+      flex-shrink: 0;
+    }
+
+    /* ── RED FLAGS ── */
+    .flag-list { display: flex; flex-direction: column; gap: 0.6rem; }
+
+    .flag-item {
+      display: flex;
+      gap: 0.8rem;
+      align-items: flex-start;
+      padding: 0.8rem;
+      border: 1px solid rgba(255,51,102,0.2);
+      background: rgba(255,51,102,0.04);
+      font-size: 0.78rem;
+      color: #cc6677;
+      line-height: 1.6;
+    }
+
+    .flag-item::before {
+      content: '!';
+      color: var(--accent2);
+      font-weight: 700;
+      font-size: 0.7rem;
+      flex-shrink: 0;
+    }
+
+    /* ── BEHAVIORAL STRING ── */
+    .behavior-string {
+      font-size: 0.75rem;
+      color: var(--accent3);
+      letter-spacing: 0.05em;
+      padding: 0.4rem 0;
+    }
+
+    /* ── FOOTER ── */
+    footer {
+      margin-top: 5rem;
+      padding: 2rem 1.5rem;
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.6rem;
+      color: var(--muted);
+      letter-spacing: 0.1em;
+    }
+
+    /* ── ANIMATIONS ── */
+    .fade-in {
+      opacity: 0;
+      transform: translateY(20px);
+      transition: opacity 0.6s ease, transform 0.6s ease;
+    }
+    .fade-in.visible { opacity: 1; transform: translateY(0); }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a href="https://ifreaku.github.io/personas/" class="nav-logo">PER<span>SONAS</span></a>
+  <a href="https://ifreaku.github.io/personas/" class="nav-back">← back to search</a>
+</nav>
+
+<div class="page">
+
+  <!-- HERO -->
+  <section class="hero fade-in">
+    <div>
+      <div class="hero-tag">// discord personality profile</div>
+      <h1 class="hero-username" id="heroUsername"></h1>
+      <p class="hero-short" id="heroShort"></p>
+      <div class="hero-vibe" id="heroVibe"></div>
+    </div>
+    <div class="hero-meta">
+      <div class="meta-badge" id="metaDate"></div>
+      <br/>
+      <div class="meta-badge">AI_ANALYZED</div>
+    </div>
+  </section>
+
+  <!-- LONG DESCRIPTION -->
+  <section class="section fade-in">
+    <div class="section-header">
+      <span class="section-num">01</span>
+      <span class="section-title">PSYCHOLOGICAL <span>PROFILE</span></span>
+    </div>
+    <p class="long-desc" id="longDesc"></p>
+  </section>
+
+  <!-- BIG FIVE + TRAITS -->
+  <section class="section fade-in">
+    <div class="section-header">
+      <span class="section-num">02</span>
+      <span class="section-title">PERSONALITY <span>SCORES</span></span>
+    </div>
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-title">Big Five — Radar</div>
+        <div class="chart-wrap radar-wrap">
+          <canvas id="radarChart"></canvas>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">Big Five — Breakdown</div>
+        <div class="score-row" id="bigFiveScores"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TRAIT SCORES -->
+  <section class="section fade-in">
+    <div class="section-header">
+      <span class="section-num">03</span>
+      <span class="section-title">TRAIT <span>ANALYSIS</span></span>
+    </div>
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-title">Trait Scores</div>
+        <div class="score-row" id="traitScores"></div>
+      </div>
+      <div class="card">
+        <div class="card-title">Trait Radar</div>
+        <div class="chart-wrap radar-wrap">
+          <canvas id="traitRadar"></canvas>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- EMOTIONAL PROFILE -->
+  <section class="section fade-in">
+    <div class="section-header">
+      <span class="section-num">04</span>
+      <span class="section-title">EMOTIONAL <span>PROFILE</span></span>
+    </div>
+    <div class="grid-2">
+      <div class="card">
+        <div class="field-row">
+          <span class="field-key">Overall Tone</span>
+          <span class="field-val" id="emotTone"></span>
+        </div>
+        <div class="field-row">
+          <span class="field-key">Expression Style</span>
+          <span class="field-val" id="emotStyle"></span>
+        </div>
+        <div class="field-row">
+          <span class="field-key">Masks Emotions</span>
+          <div id="emotMasks"></div>
+        </div>
+        <div class="field-row" style="margin-top:0.5rem">
+          <span class="field-key">Mood Consistency</span>
+          <div class="score-item" style="grid-template-columns: 1fr 40px;">
+            <div class="score-bar-bg"><div class="score-bar-fill" id="moodBar"></div></div>
+            <span class="score-val" id="moodVal"></span>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">Behavioral Patterns</div>
+        <div class="field-row">
+          <span class="field-key">Initiator vs Reactor</span>
+          <span class="behavior-string" id="initReact"></span>
+        </div>
+        <div class="field-row">
+          <span class="field-key">Conflict Behavior</span>
+          <span class="field-val" id="conflictBehavior"></span>
+        </div>
+        <div class="field-row">
+          <span class="field-key">Activity Level</span>
+          <div class="score-item" style="grid-template-columns: 1fr 40px;">
+            <div class="score-bar-bg"><div class="score-bar-fill" id="activityBar"></div></div>
+            <span class="score-val" id="activityVal"></span>
+          </div>
+        </div>
+        <div class="field-row">
+          <span class="field-key">Lurker Score</span>
+          <div class="score-item" style="grid-template-columns: 1fr 40px;">
+            <div class="score-bar-bg"><div class="score-bar-fill warn" id="lurkerBar"></div></div>
+            <span class="score-val" id="lurkerVal"></span>
+          </div>
+        </div>
+        <div class="bool-grid">
+          <div id="drivesBool"></div>
+          <div id="topicBool"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SELF EXPRESSION -->
+  <section class="section fade-in">
+    <div class="section-header">
+      <span class="section-num">05</span>
+      <span class="section-title">SELF <span>EXPRESSION</span></span>
+    </div>
+    <div class="card">
+      <div class="grid-3">
+        <div class="field-row">
+          <span class="field-key">Presentation Style</span>
+          <span class="field-val" id="selfStyle"></span>
+        </div>
+        <div class="field-row">
+          <span class="field-key">Talks About Self</span>
+          <div id="selfTalksBool"></div>
+        </div>
+        <div class="field-row">
+          <span class="field-key">Openness About Self</span>
+          <div class="score-item" style="grid-template-columns: 1fr 40px; margin-top:0.3rem">
+            <div class="score-bar-bg"><div class="score-bar-fill" id="selfOpenBar"></div></div>
+            <span class="score-val" id="selfOpenVal"></span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- LANGUAGE FINGERPRINT -->
+  <section class="section fade-in">
+    <div class="section-header">
+      <span class="section-num">06</span>
+      <span class="section-title">LANGUAGE <span>FINGERPRINT</span></span>
+    </div>
+    <div class="grid-2" style="margin-bottom:1.5rem">
+      <div class="card">
+        <div class="card-title">Style</div>
+        <div class="field-row">
+          <span class="field-key">Vocabulary Style</span>
+          <span class="field-val" id="vocabStyle"></span>
+        </div>
+        <div class="field-row">
+          <span class="field-key">Avg Message Length</span>
+          <span class="field-val" id="msgLength"></span>
+        </div>
+        <div class="field-row">
+          <span class="field-key">Punctuation</span>
+          <span class="field-val" id="punctuation"></span>
+        </div>
+        <div class="field-row">
+          <span class="field-key">Capitalization</span>
+          <span class="field-val" id="capitalization"></span>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">Frequency Scores</div>
+        <div class="score-row">
+          <div class="score-item">
+            <span class="score-label">Emoji Usage</span>
+            <div class="score-bar-bg"><div class="score-bar-fill warn" id="emojiBar"></div></div>
+            <span class="score-val" id="emojiVal"></span>
+          </div>
+          <div class="score-item">
+            <span class="score-label">Swearing</span>
+            <div class="score-bar-bg"><div class="score-bar-fill danger" id="swearBar"></div></div>
+            <span class="score-val" id="swearVal"></span>
+          </div>
+          <div class="score-item">
+            <span class="score-label">Abbreviations</span>
+            <div class="score-bar-bg"><div class="score-bar-fill" id="abbrBar"></div></div>
+            <span class="score-val" id="abbrVal"></span>
+          </div>
+        </div>
+        <div style="margin-top:1.2rem">
+          <div class="field-row">
+            <span class="field-key">Most Used Swears</span>
+            <div class="tags" id="swearTags"></div>
+          </div>
+          <div class="field-row" style="margin-top:0.8rem">
+            <span class="field-key">Most Used Emojis</span>
+            <div class="tags" id="emojiTags"></div>
+          </div>
+          <div class="field-row" style="margin-top:0.8rem">
+            <span class="field-key">Abbreviations</span>
+            <div class="tags" id="abbrTags"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card" style="margin-bottom:1rem">
+      <div class="card-title">Most Used Words</div>
+      <div class="word-cloud" id="wordCloud"></div>
+    </div>
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-title">Most Used Phrases</div>
+        <div class="tags" id="phraseTags"></div>
+      </div>
+      <div class="card">
+        <div class="card-title">Signature Expressions</div>
+        <div class="tags" id="sigTags"></div>
+      </div>
+    </div>
+    <div class="card" style="margin-top:1rem">
+      <div class="card-title">Typing Quirks</div>
+      <div class="tags" id="quirkTags"></div>
+    </div>
+  </section>
+
+  <!-- HIDDEN TRAITS -->
+  <section class="section fade-in">
+    <div class="section-header">
+      <span class="section-num">07</span>
+      <span class="section-title">HIDDEN <span>TRAITS</span></span>
+    </div>
+    <div class="hidden-list" id="hiddenList"></div>
+  </section>
+
+  <!-- INTERESTS + THEMES -->
+  <section class="section fade-in">
+    <div class="section-header">
+      <span class="section-num">08</span>
+      <span class="section-title">INTERESTS & <span>THEMES</span></span>
+    </div>
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-title">Interests</div>
+        <div class="tags" id="interestTags"></div>
+      </div>
+      <div class="card">
+        <div class="card-title">Recurring Themes</div>
+        <div class="tags" id="themeTags"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- NOTABLE QUOTES -->
+  <section class="section fade-in">
+    <div class="section-header">
+      <span class="section-num">09</span>
+      <span class="section-title">NOTABLE <span>QUOTES</span></span>
+    </div>
+    <div class="quotes" id="quotesList"></div>
+  </section>
+
+  <!-- RED FLAGS -->
+  <section class="section fade-in">
+    <div class="section-header">
+      <span class="section-num">10</span>
+      <span class="section-title">RED <span>FLAGS</span></span>
+    </div>
+    <div class="flag-list" id="flagList"></div>
+  </section>
+
+</div>
+
+<footer>
+  <span>PERSONAS — AI PERSONALITY ENGINE</span>
+  <span>ifreaku.github.io/personas</span>
+</footer>
+
+<script>
+// ══════════════════════════════════════════
+// PASTE YOUR JSON DATA HERE
+// ══════════════════════════════════════════
+const DATA = {
+  "username": "chatwithmepls",
+  "short_description": "A provocateur who uses aggressive taunts and insults to force social interaction, masking potential loneliness with hostility.",
+  "long_description": "This user's communication style is dominated by aggressive, demanding language designed to provoke a reaction and force others online or into conversation. The pattern suggests a deep-seated need for attention and interaction, but expressed through negative reinforcement—threats, insults, and mockery. Their personality shows low agreeableness and high impulsiveness, with interactions primarily driven by a desire to dominate the social space and elicit a response, regardless of its nature. Emotional expression is volatile and externally focused, using others' reactions as a primary source of engagement. There's a performative aspect to the aggression, as it's consistently tied to demands for others to join them, indicating the hostility is a tool for connection rather than pure malice.",
+  "overall_vibe": "Interacting with them feels like being aggressively recruited for a fight you didn't sign up for.",
+  "personality": {
+    "openness": 20,
+    "conscientiousness": 15,
+    "extraversion": 80,
+    "agreeableness": 5,
+    "neuroticism": 70
+  },
+  "traits": {
+    "humor": 10,
+    "sarcasm": 40,
+    "aggression": 95,
+    "empathy": 5,
+    "confidence": 85,
+    "toxicity": 90,
+    "intelligence": 30,
+    "creativity": 15,
+    "social_dominance": 90,
+    "manipulation": 75,
+    "emotional_volatility": 85,
+    "self_awareness": 10,
+    "impulsiveness": 95
+  },
+  "emotional_profile": {
+    "overall_tone": "Hostile and demanding",
+    "mood_consistency": 25,
+    "emotion_expression_style": "Explosive and externally-directed",
+    "masks_emotions": true
+  },
+  "behavioral_patterns": {
+    "initiator_vs_reactor": "Aggressive initiator",
+    "activity_level": 80,
+    "drives_conversation": true,
+    "stays_on_topic": false,
+    "conflict_behavior": "Instigates and escalates",
+    "lurker_score": 0
+  },
+  "self_expression": {
+    "openness_about_self": 5,
+    "talks_about_self": false,
+    "self_presentation_style": "Dominant provocateur"
+  },
+  "language_fingerprint": {
+    "vocabulary_style": "Aggressive, repetitive, taunting",
+    "average_message_length": "Short to medium",
+    "most_used_words": [
+      "aa",
+      "saale",
+      "gaand",
+      "de",
+      "abhi",
+      "nahi",
+      "kyu",
+      "bol",
+      "raha",
+      "marwaunga"
+    ],
+    "most_used_phrases": [
+      "aa ja",
+      "gaand marwaunga",
+      "kyu bol raha"
+    ],
+    "signature_expressions": [
+      "Saale, abhi aa ya gaand marwaoge?",
+      "Bhak bharwi"
+    ],
+    "punctuation_style": "Minimal, relies on aggressive tone",
+    "capitalization_habits": "Inconsistent, occasional full caps for emphasis",
+    "emoji_usage_frequency": 5,
+    "most_used_emojis": [
+      "😭"
+    ],
+    "swearing_frequency": 95,
+    "most_used_swears": [
+      "saale",
+      "gaand",
+      "bharwi"
+    ],
+    "abbreviation_frequency": 30,
+    "most_used_abbreviations": [
+      "ko"
+    ],
+    "typing_quirks": [
+      "Repetitive demands",
+      "Use of 'be' as a colloquial address"
+    ]
+  },
+  "hidden_traits": [
+    "Uses aggression as a primary tool for social connection",
+    "Likely experiences frustration or loneliness manifesting as hostility",
+    "Behavior suggests a need for control in digital interactions",
+    "The constant demands indicate a fear of being ignored or irrelevant"
+  ],
+  "interests": [
+    "Provoking reactions",
+    "Online social dominance"
+  ],
+  "recurring_themes": [
+    "Demanding others to come online",
+    "Issuing threats and insults",
+    "Escalating conflict for engagement"
+  ],
+  "notable_quotes": [
+    "Saale, abhi aa ya gaand marwaoge?",
+    "Chor de bhai, abhi aa, saale, nahi toh gaand marwaunga.",
+    "Bhak bharwi, og.ifreaku saale, aa ja."
+  ],
+  "red_flags": [
+    "Extremely high aggression and toxicity scores",
+    "Uses threats as a normal form of communication",
+    "Shows near-zero empathy",
+    "Emotionally volatile and manipulative",
+    "Social interactions are primarily conflict-based"
+  ]
+};
+// ══════════════════════════════════════════
+
+const CHART_DEFAULTS = {
+  color: '#f0f0f0',
+  borderColor: '#1e1e1e',
+  font: { family: "'Space Mono', monospace", size: 10 }
+};
+
+Chart.defaults.color = CHART_DEFAULTS.color;
+Chart.defaults.borderColor = CHART_DEFAULTS.borderColor;
+Chart.defaults.font = CHART_DEFAULTS.font;
+
+function scoreColor(val) {
+  if (val >= 70) return '#ff3366';
+  if (val >= 40) return '#ffaa00';
+  return '#00ff88';
+}
+
+function dangerFields() {
+  return ['toxicity', 'aggression', 'manipulation', 'emotional_volatility', 'impulsiveness'];
+}
+
+function warnFields() {
+  return ['sarcasm', 'social_dominance', 'neuroticism'];
+}
+
+function barClass(key) {
+  if (dangerFields().includes(key)) return 'danger';
+  if (warnFields().includes(key)) return 'warn';
+  return '';
+}
+
+function renderScoreRow(containerId, obj) {
+  const el = document.getElementById(containerId);
+  Object.entries(obj).forEach(([key, val]) => {
+    const cls = barClass(key);
+    el.innerHTML += `
+      <div class="score-item">
+        <span class="score-label">${key.replace(/_/g,' ')}</span>
+        <div class="score-bar-bg">
+          <div class="score-bar-fill ${cls}" data-val="${val}"></div>
+        </div>
+        <span class="score-val">${val}</span>
+      </div>`;
+  });
+}
+
+function renderBool(id, val, labelTrue, labelFalse) {
+  const el = document.getElementById(id);
+  const label = val ? (labelTrue || 'YES') : (labelFalse || 'NO');
+  el.innerHTML = `<span class="bool-pill ${val ? 'yes' : 'no'}">${label}</span>`;
+}
+
+function renderTags(id, arr, cls = '') {
+  const el = document.getElementById(id);
+  if (!arr || arr.length === 0) {
+    el.innerHTML = '<span style="color:var(--muted);font-size:0.65rem">none observed</span>';
+    return;
+  }
+  el.innerHTML = arr.map(t => `<span class="tag-item ${cls}">${t}</span>`).join('');
+}
+
+function renderList(id, arr, itemClass) {
+  const el = document.getElementById(id);
+  if (!arr || arr.length === 0) {
+    el.innerHTML = '<span style="color:var(--muted);font-size:0.65rem">none</span>';
+    return;
+  }
+  el.innerHTML = arr.map(t => `<div class="${itemClass}">${t}</div>`).join('');
+}
+
+function renderWordCloud(id, arr) {
+  const el = document.getElementById(id);
+  if (!arr || arr.length === 0) return;
+  const sizes = [2.2, 1.9, 1.6, 1.4, 1.2, 1.0, 0.9, 0.85, 0.8];
+  el.innerHTML = arr.map((w, i) => {
+    const size = sizes[i] || 0.75;
+    return `<span class="word-item" style="font-size:${size}rem">${w}</span>`;
+  }).join('');
+}
+
+function animateBars() {
+  document.querySelectorAll('.score-bar-fill[data-val]').forEach(el => {
+    const val = el.getAttribute('data-val');
+    setTimeout(() => { el.style.width = val + '%'; }, 200);
+  });
+}
+
+function setSingleBar(barId, valId, val, delay = 300) {
+  setTimeout(() => {
+    const bar = document.getElementById(barId);
+    if (bar) bar.style.width = val + '%';
+  }, delay);
+  const valEl = document.getElementById(valId);
+  if (valEl) valEl.textContent = val;
+}
+
+function buildRadarChart(id, labels, data, color) {
+  const ctx = document.getElementById(id).getContext('2d');
+  new Chart(ctx, {
+    type: 'radar',
+    data: {
+      labels,
+      datasets: [{
+        data,
+        backgroundColor: color + '18',
+        borderColor: color,
+        borderWidth: 1.5,
+        pointBackgroundColor: color,
+        pointRadius: 3,
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      scales: {
+        r: {
+          min: 0, max: 100,
+          ticks: { display: false, stepSize: 25 },
+          grid: { color: '#1e1e1e' },
+          angleLines: { color: '#1e1e1e' },
+          pointLabels: { font: { size: 9, family: "'Space Mono', monospace" }, color: '#666' }
+        }
+      },
+      plugins: { legend: { display: false } }
+    }
+  });
+}
+
+function init() {
+  const d = DATA;
+  const lf = d.language_fingerprint;
+  const ep = d.emotional_profile;
+  const bp = d.behavioral_patterns;
+  const se = d.self_expression;
+
+  // Hero
+  document.getElementById('heroUsername').textContent = d.username;
+  document.getElementById('heroShort').textContent = d.short_description;
+  document.getElementById('heroVibe').textContent = d.overall_vibe;
+  document.getElementById('metaDate').textContent = new Date().toLocaleDateString('en-US', { year:'numeric', month:'short', day:'numeric' });
+  document.title = `PERSONAS — ${d.username}`;
+
+  // Long desc
+  document.getElementById('longDesc').textContent = d.long_description;
+
+  // Big Five
+  renderScoreRow('bigFiveScores', d.personality);
+  buildRadarChart('radarChart',
+    Object.keys(d.personality).map(k => k.toUpperCase()),
+    Object.values(d.personality),
+    '#00ff88'
+  );
+
+  // Traits
+  renderScoreRow('traitScores', d.traits);
+  buildRadarChart('traitRadar',
+    Object.keys(d.traits).map(k => k.replace(/_/g,' ')),
+    Object.values(d.traits),
+    '#ff3366'
+  );
+
+  // Emotional
+  document.getElementById('emotTone').textContent = ep.overall_tone;
+  document.getElementById('emotStyle').textContent = ep.emotion_expression_style;
+  renderBool('emotMasks', ep.masks_emotions, 'YES — masks emotions', 'NO — open expression');
+  setSingleBar('moodBar', 'moodVal', ep.mood_consistency);
+
+  // Behavioral
+  document.getElementById('initReact').textContent = bp.initiator_vs_reactor;
+  document.getElementById('conflictBehavior').textContent = bp.conflict_behavior;
+  setSingleBar('activityBar', 'activityVal', bp.activity_level);
+  setSingleBar('lurkerBar', 'lurkerVal', bp.lurker_score);
+  renderBool('drivesBool', bp.drives_conversation, 'drives conversation', 'follows conversation');
+  renderBool('topicBool', bp.stays_on_topic, 'stays on topic', 'derails topics');
+
+  // Self expression
+  document.getElementById('selfStyle').textContent = se.self_presentation_style;
+  renderBool('selfTalksBool', se.talks_about_self, 'talks about self', 'rarely self-references');
+  setSingleBar('selfOpenBar', 'selfOpenVal', se.openness_about_self);
+
+  // Language fingerprint
+  document.getElementById('vocabStyle').textContent = lf.vocabulary_style;
+  document.getElementById('msgLength').textContent = lf.average_message_length;
+  document.getElementById('punctuation').textContent = lf.punctuation_style;
+  document.getElementById('capitalization').textContent = lf.capitalization_habits;
+  setSingleBar('emojiBar', 'emojiVal', lf.emoji_usage_frequency);
+  setSingleBar('swearBar', 'swearVal', lf.swearing_frequency);
+  setSingleBar('abbrBar', 'abbrVal', lf.abbreviation_frequency);
+  renderTags('swearTags', lf.most_used_swears, 'danger');
+  renderTags('emojiTags', lf.most_used_emojis, 'warn');
+  renderTags('abbrTags', lf.most_used_abbreviations, 'accent');
+  renderWordCloud('wordCloud', lf.most_used_words);
+  renderTags('phraseTags', lf.most_used_phrases, 'accent');
+  renderTags('sigTags', lf.signature_expressions, 'warn');
+  renderTags('quirkTags', lf.typing_quirks);
+
+  // Hidden traits
+  renderList('hiddenList', d.hidden_traits, 'hidden-item');
+
+  // Interests + themes
+  renderTags('interestTags', d.interests, 'accent');
+  renderTags('themeTags', d.recurring_themes);
+
+  // Quotes
+  const qEl = document.getElementById('quotesList');
+  (d.notable_quotes || []).forEach(q => {
+    qEl.innerHTML += `<div class="quote-item">"${q}"</div>`;
+  });
+
+  // Red flags
+  const fEl = document.getElementById('flagList');
+  if (!d.red_flags || d.red_flags.length === 0) {
+    fEl.innerHTML = '<span style="color:var(--muted);font-size:0.75rem">no red flags detected</span>';
+  } else {
+    d.red_flags.forEach(f => {
+      fEl.innerHTML += `<div class="flag-item">${f}</div>`;
+    });
+  }
+
+  // Animate bars
+  animateBars();
+
+  // Fade in sections
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+  }, { threshold: 0.1 });
+  document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
+}
+
+document.addEventListener('DOMContentLoaded', init);
+</script>
+</body>
+</html>
